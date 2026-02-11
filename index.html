@@ -1,1 +1,376 @@
-xyz
+<!doctype html>
+<html lang="de">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hex Color Visualizer — LocalStorage</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #0b1220;
+      --muted: #94a3b8;
+      --accent: #7c3aed
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      height: 100%
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg, var(--bg), #071028);
+      color: #e6eef8;
+      padding: 28px
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 20px
+    }
+
+    header h1 {
+      font-size: 20px;
+      margin: 0
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center
+    }
+
+    .picker {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.06));
+      padding: 12px;
+      border-radius: 12px
+    }
+
+    .picker input[type="color"] {
+      width: 56px;
+      height: 56px;
+      border-radius: 8px;
+      border: 2px solid rgba(255, 255, 255, 0.06);
+      padding: 0
+    }
+
+    .picker .hex {
+      display: flex;
+      flex-direction: column
+    }
+
+    .hex input {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 8px 10px;
+      border-radius: 8px;
+      color: inherit;
+      width: 160px
+    }
+
+    button {
+      background: var(--accent);
+      border: 0;
+      padding: 10px 12px;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+      font-weight: 600
+    }
+
+    button.ghost {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .preview {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 16px;
+      margin-top: 18px
+    }
+
+    .big-preview {
+      border-radius: 12px;
+      padding: 22px;
+      min-height: 132px;
+      display: flex;
+      flex-direction: column;
+      justify: center;
+      align-items: flex-start;
+      gap: 8px
+    }
+
+    .big-preview .title {
+      font-weight: 700
+    }
+
+    .meta {
+      font-size: 13px;
+      color: var(--muted)
+    }
+
+    .examples {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.04));
+      padding: 12px;
+      border-radius: 12px
+    }
+
+    .examples-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px
+    }
+
+    .swatch-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px
+    }
+
+    .swatch {
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      box-shadow: 0 4px 12px rgba(2, 6, 23, 0.6)
+    }
+
+    .swatch .strip {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700
+    }
+
+    .swatch .info {
+      padding: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px
+    }
+
+    .swatch .code {
+      font-family: monospace
+    }
+
+    .swatch .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px
+    }
+
+    .small {
+      font-size: 13px
+    }
+
+    footer {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 13px
+    }
+
+    @media (max-width:900px) {
+      .preview {
+        grid-template-columns: 1fr;
+      }
+
+      .swatch {
+        width: 48%
+      }
+    }
+
+    @media (max-width:520px) {
+      .swatch {
+        width: 100%
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Hex Color Visualizer</h1>
+      <div class="controls" style="margin-left:auto">
+        <div class="picker" title="Wähle eine Farbe oder gib einen Hex-Code ein">
+          <input id="colorInput" type="color" value="#7c3aed" />
+          <div class="hex">
+            <label class="small" for="hexInput">Hex</label>
+            <input id="hexInput" maxlength="7" placeholder="#RRGGBB" />
+          </div>
+          <button id="addBtn">Zu Beispielen</button>
+          <button id="clearBtn" class="ghost">Alle löschen</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="preview">
+      <div>
+        <div id="bigPreview" class="big-preview" style="background:#7c3aed">
+          <div class="title">Beispieltext</div>
+          <div class="meta">Hex: <span id="displayHex">#7C3AED</span> · Vorschlag: <span id="suggestion">#fff</span>
+          </div>
+        </div>
+        <div style="margin-top:12px;color:var(--muted);font-size:14px">Wähle eine Farbe, gib einen Hex-Code ein (mit
+          oder ohne '#') oder füge die aktuelle Farbe zur Liste hinzu. Farben werden im <strong>LocalStorage</strong>
+          deines Browsers gespeichert.</div>
+      </div>
+
+      <aside class="examples">
+        <div class="examples-header">
+          <strong>Beispiel-Farben</strong>
+          <div class="small">Gespeichert: <span id="count">0</span></div>
+        </div>
+        <div class="swatch-list" id="swatchList"></div>
+      </aside>
+    </div>
+
+    <footer>Tippe auf eine Farbfeld, um die Farbe in den Picker zu laden. Kopieren & Entfernen sind ebenfalls möglich.
+    </footer>
+  </div>
+
+  <script>
+    const key = 'hex_color_examples_v1';
+    const colorInput = document.getElementById('colorInput');
+    const hexInput = document.getElementById('hexInput');
+    const displayHex = document.getElementById('displayHex');
+    const suggestion = document.getElementById('suggestion');
+    const bigPreview = document.getElementById('bigPreview');
+    const addBtn = document.getElementById('addBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const swatchList = document.getElementById('swatchList');
+    const count = document.getElementById('count');
+
+    function normalizeHex(s) {
+      if (!s) return null;
+      s = s.trim();
+      if (s[0] !== '#') s = '#' + s;
+      if (/^#[0-9A-Fa-f]{6}$/.test(s)) return s.toUpperCase();
+      return null;
+    }
+
+    function setPreview(hex) {
+      const n = normalizeHex(hex);
+      if (!n) return;
+      bigPreview.style.background = n;
+      displayHex.textContent = n;
+      // compute luminance to choose text color
+      const rgb = [parseInt(n.substr(1, 2), 16), parseInt(n.substr(3, 2), 16), parseInt(n.substr(5, 2), 16)]
+      const l = (0.2126 * srgb(rgb[0]) + 0.7152 * srgb(rgb[1]) + 0.0722 * srgb(rgb[2]));
+      const best = l > 0.5 ? '#000000' : '#FFFFFF';
+      bigPreview.style.color = best;
+      suggestion.textContent = best;
+    }
+
+    function srgb(v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }
+
+    function loadExamples() {
+      try {
+        const raw = localStorage.getItem(key);
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+      } catch (e) { return [] }
+    }
+
+    function saveExamples(arr) { localStorage.setItem(key, JSON.stringify(arr)); }
+
+    function renderSwatches() {
+      const arr = loadExamples();
+      swatchList.innerHTML = '';
+      count.textContent = arr.length;
+      for (const hex of arr) {
+        const el = document.createElement('div'); el.className = 'swatch';
+        const strip = document.createElement('div'); strip.className = 'strip'; strip.style.background = hex; strip.textContent = '';
+        // choose readable text color
+        const rgb = [parseInt(hex.substr(1, 2), 16), parseInt(hex.substr(3, 2), 16), parseInt(hex.substr(5, 2), 16)];
+        const l = (0.2126 * srgb(rgb[0]) + 0.7152 * srgb(rgb[1]) + 0.0722 * srgb(rgb[2]));
+        strip.style.color = l > 0.5 ? '#000' : '#fff';
+        strip.title = hex;
+
+        const info = document.createElement('div'); info.className = 'info';
+        const code = document.createElement('div'); code.className = 'code'; code.textContent = hex;
+        const actions = document.createElement('div'); actions.className = 'actions';
+
+        const loadBtn = document.createElement('button'); loadBtn.className = 'ghost'; loadBtn.textContent = 'Laden';
+        loadBtn.onclick = () => { colorInput.value = hex; hexInput.value = hex; setPreview(hex); }
+
+        const copyBtn = document.createElement('button'); copyBtn.textContent = 'Kopieren';
+        copyBtn.onclick = async () => { try { await navigator.clipboard.writeText(hex); copyBtn.textContent = 'Kopiert'; setTimeout(() => copyBtn.textContent = 'Kopieren', 1000); } catch (e) { alert('Kopieren nicht möglich') } }
+
+        const delBtn = document.createElement('button'); delBtn.className = 'ghost'; delBtn.textContent = 'Entfernen';
+        delBtn.onclick = () => { const a = loadExamples().filter(h => h !== hex); saveExamples(a); renderSwatches(); }
+
+        actions.appendChild(loadBtn); actions.appendChild(copyBtn); actions.appendChild(delBtn);
+        info.appendChild(code); info.appendChild(actions);
+
+        el.appendChild(strip); el.appendChild(info);
+        swatchList.appendChild(el);
+
+        // click on strip to load
+        strip.addEventListener('click', () => { colorInput.value = hex; hexInput.value = hex; setPreview(hex); });
+      }
+    }
+
+    // initial setup
+    function init() {
+      const initial = loadExamples();
+      // if empty, populate with some nice defaults
+      if (initial.length === 0) {
+        const defaults = ['#FF5A5F', '#7C3AED', '#06B6D4', '#F59E0B', '#10B981', '#111827'];
+        saveExamples(defaults);
+      }
+      renderSwatches();
+      // set initial picker
+      colorInput.addEventListener('input', e => { hexInput.value = e.target.value.toUpperCase(); setPreview(e.target.value); });
+
+      hexInput.addEventListener('input', e => {
+        const raw = e.target.value;
+        const norm = normalizeHex(raw);
+        if (norm) { colorInput.value = norm; setPreview(norm); }
+      });
+
+      addBtn.addEventListener('click', () => {
+        const norm = normalizeHex(hexInput.value) || normalizeHex(colorInput.value);
+        if (!norm) { alert('Ungültiger Hex-Code. Bitte ein Format wie #RRGGBB verwenden.'); return; }
+        const arr = loadExamples();
+        if (arr.includes(norm)) { alert('Die Farbe ist bereits in den Beispielen.'); return; }
+        arr.unshift(norm);
+        if (arr.length > 40) arr.pop();
+        saveExamples(arr);
+        renderSwatches();
+      });
+
+      clearBtn.addEventListener('click', () => {
+        if (confirm('Alle gespeicherten Farben wirklich löschen?')) { localStorage.removeItem(key); renderSwatches(); }
+      });
+
+      // set starting values
+      const start = colorInput.value; hexInput.value = start.toUpperCase(); setPreview(start);
+    }
+
+    init();
+  </script>
+</body>
+
+</html>
